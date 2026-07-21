@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Templo 3D interactivo</title>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+
+    #mobileControls {
+      position: absolute;
+      left: 290px;
+      bottom: 25px;
+      z-index: 1000;
+      user-select: none;
+    }
+
+    #mobileControls .fila {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+
+    #mobileControls button {
+      width: 65px;
+      height: 65px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(30, 30, 30, .65);
+      color: white;
+      font-size: 28px;
+      backdrop-filter: blur(8px);
+      touch-action: none;
+      z-index: 1000;
+    }
+
+
+    #infoBox {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+
+      width: 320px;
+      padding: 20px;
+      color: white;
+      background: rgba(18, 22, 30, .78);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 215, 120, .5);
+      border-left: 6px solid #d6b15f;
+      border-radius: 18px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+      font-family: Arial, sans-serif;
+      display: none;
+      animation: fade .35s ease;
+      z-index: 999;
+    }
+
+    #titulo {
+
+      margin: 0;
+      font-size: 23px;
+      color: #ffd56a;
+
+    }
+
+    #descripcion {
+
+      margin-top: 10px;
+      line-height: 1.6;
+      font-size: 15px;
+      color: #eee;
+
+    }
+
+    @keyframes fade {
+
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+
+      }
+
+      to {
+
+        opacity: 1;
+        transform: translateX(0);
+
+      }
+
+    }
+
+    #lineCanvas {
+
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 500;
+
+    }
+
+
+    #debugBox {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: 250px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+      font-family: Arial;
+      border-radius: 10px;
+      font-size: 13px;
+      z-index: 999;
+    }
+
+    #mobileHeight {
+
+      position: absolute;
+      bottom: 40px;
+      right: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      z-index: 1000;
+
+    }
+
+    #mobileHeight button {
+
+      width: 65px;
+      height: 65px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(30, 30, 30, .65);
+      color: white;
+      font-size: 30px;
+      font-weight: bold;
+      backdrop-filter: blur(8px);
+      touch-action: none;
+
+    }
+
+    #mobileHeight button:active {
+
+      background: #d6b15f;
+
+    }
+  </style>
+
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+</head>
+
+<body>
+
+
+  <div id="mobileControls">
+
+    <button id="btnW">▲</button>
+
+    <div class="fila">
+      <button id="btnA">◀</button>
+      <button id="btnS">▼</button>
+      <button id="btnD">▶</button>
+    </div>
+
+  </div>
+
+  <div id="mobileHeight">
+    <button id="btnUp">+</button>
+    <button id="btnDown">−</button>
+  </div>
+
+  <div id="infoBox">
+    <h3 id="titulo"></h3>
+    <p id="descripcion"></p>
+  </div>
+
+  <canvas id="lineCanvas"></canvas>
+
+ <!-- <div id="debugBox">
+    <b>Objetos interactivos</b>
+    <ul id="listaObjetos"></ul>
+  </div>-->
+
+  <a-scene shadow="type:pcfsoft; enabled:true" renderer="colorManagement:true; physicallyCorrectLights:true">
+
+    <a-assets>
+      <a-asset-item id="modeloGLB" src="Rampav8.glb"></a-asset-item>
+    </a-assets>
+
+    <a-sky color="#87CEEB"></a-sky>
+
+    <!-- Luz ambiental -->
+    <!-- Luz ambiental -->
+    <a-light type="ambient" color="#dfe8ff" intensity="0.65">
+    </a-light>
+
+    <!-- Sol principal -->
+    <a-light type="directional" color="#fff5d6" intensity="2.8" position="6 10 4" castShadow="true">
+    </a-light>
+
+    <!-- Luz de relleno -->
+    <a-light type="directional" color="#cfe7ff" intensity="1.2" position="-6 4 -4">
+    </a-light>
+
+    <!-- Contraluz -->
+    <a-light type="directional" color="#ffe9c0" intensity="0.8" position="0 6 -8">
+    </a-light>
+    <!-- MODELO -->
+    <a-entity id="templo" gltf-model="#modeloGLB" position="0 0 2" scale=".2 .2 .2">
+    </a-entity>
+
+    <!-- CAMARA -->
+    <a-entity camera look-controls wasd-controls="acceleration:80" position="0 1.6 5">
+
+      <a-cursor rayOrigin="entity"></a-cursor>
+
+    </a-entity>
+
+  </a-scene>
+
+  <script>
+
+    let mover = {
+      w: false,
+      a: false,
+      s: false,
+      d: false,
+      up: false,
+      down: false
+    };
+
+    const camara = document.querySelector("[camera]");
+
+    window.addEventListener("keydown", (e) => {
+
+      const pos = camara.getAttribute("position");
+      const paso = 0.25;
+
+      switch (e.key.toLowerCase()) {
+
+        case "q":   // Subir
+          pos.y += paso;
+          break;
+
+        case "e":   // Bajar
+          pos.y -= paso;
+          break;
+
+        default:
+          return;
+      }
+
+      camara.setAttribute("position", pos);
+
+    });
+
+    [
+      ["btnW", "w"],
+      ["btnA", "a"],
+      ["btnS", "s"],
+      ["btnD", "d"],
+      ["btnUp", "up"],
+      ["btnDown", "down"]
+
+    ].forEach(([id, key]) => {
+
+      const b = document.getElementById(id);
+
+      b.addEventListener("touchstart", e => {
+        e.preventDefault();
+        mover[key] = true;
+      });
+
+      b.addEventListener("touchend", e => {
+        e.preventDefault();
+        mover[key] = false;
+      });
+
+    });
+
+    const templo = document.querySelector("#templo");
+
+    const infoBox = document.querySelector("#infoBox");
+    const titulo = document.querySelector("#titulo");
+    const descripcion = document.querySelector("#descripcion");
+
+    const listaUI = document.querySelector("#listaObjetos");
+
+    const infoPartes = {
+      "Muro2": {
+        titulo: "EntradaPrincipal",
+        descripcion: "Lugar ceremonial del templo."
+      },
+      "Rampa": {
+        titulo: "Rampa Visible",
+        descripcion: "Rampa del monumento."
+      },
+      "Cubo1526": {
+        titulo: "Columna",
+        descripcion: "Soporte estructural de piedra."
+      },
+      "Rampa2": {
+        titulo: "Rampa",
+        descripcion: "Segunda Rampa del monumento."
+      }
+    };
+
+    let mouse = new THREE.Vector2();
+    let raycaster = new THREE.Raycaster();
+    let lastHit = null;
+    let meshList = [];
+
+    templo.addEventListener("model-loaded", () => {
+
+      const mesh = templo.getObject3D("mesh");
+
+      meshList = [];
+      listaUI.innerHTML = "";
+
+      mesh.traverse((obj) => {
+
+        if (!obj.isMesh) return;
+
+        obj.userData.clickable = true;
+
+        meshList.push(obj);
+
+        // mostrar nombres en UI
+        const li = document.createElement("li");
+        li.textContent = obj.name || "sin_nombre";
+        listaUI.appendChild(li);
+
+      });
+
+      console.log("Objetos interactivos:", meshList);
+
+    });
+
+    window.addEventListener("mousemove", (event) => {
+
+      if (meshList.length === 0) return;
+      const camera = document.querySelector("[camera]").getObject3D("camera");
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(meshList, true);
+      const obj = intersects[0].object;
+      const data = infoPartes[obj.name];
+
+      if (data) {
+
+        lastHit = obj.name;
+
+        titulo.textContent = data.titulo;
+        descripcion.textContent = data.descripcion;
+
+        infoBox.style.display = "block";
+
+        drawConnection(obj);
+
+      } else {
+
+        lastHit = null;
+
+        infoBox.style.display = "none";
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      }
+
+    });
+
+
+    function detectarCentro() {
+
+      if (!('ontouchstart' in window || navigator.maxTouchPoints > 0))
+        return;
+
+      const camera = document.querySelector("[camera]").getObject3D("camera");
+
+    
+      raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+
+      const intersects = raycaster.intersectObjects(meshList, true);
+
+      if (intersects.length > 0) {
+
+        const obj = intersects[0].object;
+        const data = infoPartes[obj.name];
+
+        if (data) {
+
+          if (lastHit !== obj.name) {
+            lastHit = obj.name;
+
+            titulo.textContent = data.titulo;
+            descripcion.textContent = data.descripcion;
+            infoBox.style.display = "block";
+          }
+
+          drawConnection(obj);
+          return;
+        }
+      }
+
+      lastHit = null;
+      infoBox.style.display = "none";
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    }
+
+
+    window.addEventListener("click", () => {
+
+      if (!lastHit) return;
+
+      const data = infoPartes[lastHit];
+      if (!data) return;
+
+      titulo.textContent = data.titulo;
+      descripcion.textContent = data.descripcion;
+      infoBox.style.display = "block";
+
+    });
+
+    const canvas = document.getElementById("lineCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+    }
+
+    resizeCanvas();
+
+    window.addEventListener("resize", resizeCanvas);
+
+
+
+    function drawConnection(obj) {
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const camera = document.querySelector("[camera]").getObject3D("camera");
+      const pos = obj.getWorldPosition(new THREE.Vector3());
+      pos.project(camera);
+      const x = (pos.x * 0.5 + 0.5) * canvas.width;
+      const y = (-pos.y * 0.5 + 0.5) * canvas.height;
+      const box = infoBox.getBoundingClientRect();
+      const x2 = box.left;
+      const y2 = box.top + box.height / 2;
+      ctx.strokeStyle = "#ffd56a";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.fillStyle = "#ffd56a";
+      ctx.beginPath();
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+
+    const cam = document.querySelector("[camera]");
+
+    function animate() {
+
+    requestAnimationFrame(animate);
+
+    const velocidad = 0.12;
+    const velocidadY = 0.08;
+
+    if (mover.w) cam.object3D.translateZ(-velocidad);
+    if (mover.s) cam.object3D.translateZ(velocidad);
+    if (mover.a) cam.object3D.translateX(-velocidad);
+    if (mover.d) cam.object3D.translateX(velocidad);
+
+    if (mover.up)
+        cam.object3D.position.y += velocidadY;
+
+    if (mover.down)
+        cam.object3D.position.y -= velocidadY;
+
+    // Detecta el objeto al que apunta el centro
+    detectarCentro();
+
+}
+    animate();
+
+
+
+    b.addEventListener("pointerdown", () => {
+      mover[key] = true;
+    });
+
+    b.addEventListener("pointerup", () => {
+      mover[key] = false;
+    });
+
+    b.addEventListener("pointerleave", () => {
+      mover[key] = false;
+    });
+
+    b.addEventListener("pointercancel", () => {
+      mover[key] = false;
+    });
+
+  </script>
+
+</body>
+
+</html>
