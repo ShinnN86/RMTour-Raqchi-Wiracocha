@@ -53,19 +53,14 @@
 
   <a-scene
     id="scene"
-  webxr="optionalFeatures: hit-test, local-floor"
-  renderer="alpha: true; antialias: true"
-  vr-mode-ui="enabled: true">
+    shadow="type:pcfsoft; enabled:true"
+    renderer="colorManagement:true; physicallyCorrectLights:true; alpha: true; antialias: true"
+    webxr="optionalFeatures: hit-test, local-floor"
+    vr-mode-ui="enabled: true">
 
 
-    <a-assets>
 
-      <a-asset-item
-        id="modeloGLB"
-        src="WiracochaTemplov5O.glb">
-      </a-asset-item>
-
-    </a-assets>
+    
 
 
 
@@ -114,9 +109,10 @@
 
     <a-entity
       id="templo"
-      gltf-model="#modeloGLB"
+      gltf-model="WiracochaTemplov5O.glb"
       position="0 0 2"
-      scale=".4 .4 .4">
+      scale=".4 .4 .4"
+      shadow="cast: true">
     </a-entity>
 
 
@@ -125,7 +121,7 @@
       look-controls
       wasd-controls="acceleration:80"
       position="0 1.6 5">
-
+     <a-cursor rayOrigin="entity"></a-cursor>
      
 
     </a-entity>
