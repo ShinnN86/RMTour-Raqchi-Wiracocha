@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Templo 3D interactivo</title>
+
+
+
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+   <link rel="stylesheet" href="Estilos.css">
+
+</head>
+
+<body>
+
+
+  <div id="mobileControls">
+
+    <button id="btnW">▲</button>
+
+    <div class="fila">
+      <button id="btnA">◀</button>
+      <button id="btnS">▼</button>
+      <button id="btnD">▶</button>
+    </div>
+
+  </div>
+
+  <div id="mobileHeight">
+    <button id="btnUp">+</button>
+    <button id="btnDown">−</button>
+  </div>
+
+  <div id="infoBox">
+    <h3 id="titulo"></h3>
+    <p id="descripcion"></p>
+  </div>
+
+  <canvas id="lineCanvas"></canvas>
+
+  <!--<div id="debugBox">
+    <b>Objetos interactivos</b>
+    <ul id="listaObjetos"></ul>
+  </div>-->
+
+  <a-scene shadow="type:pcfsoft; enabled:true" renderer="colorManagement:true; physicallyCorrectLights:true">
+
+    <a-assets>
+      <a-asset-item id="modeloGLB" src="WiracochaTemplov5O.glb"></a-asset-item>
+    </a-assets>
+
+    <a-sky color="#87CEEB"></a-sky>
+
+    <!-- Luz ambiental -->
+    <!-- Luz ambiental -->
+    <a-light type="ambient" color="#dfe8ff" intensity="0.65">
+    </a-light>
+
+    <!-- Sol principal -->
+    <a-light type="directional" color="#fff5d6" intensity="1.9" position="6 10 4" castShadow="true">
+    </a-light>
+
+    <!-- Luz de relleno -->
+    <a-light type="directional" color="#cfe7ff" intensity="1.2" position="-6 4 -4">
+    </a-light>
+
+    <!-- Contraluz -->
+    <a-light type="directional" color="#ffe9c0" intensity="0.8" position="0 6 -8">
+    </a-light>
+    <!-- MODELO -->
+    <a-entity id="templo" gltf-model="#modeloGLB" position="0 0 2" scale=".4 .4 .4">
+    </a-entity>
+
+    <!-- CAMARA -->
+    <a-entity camera look-controls wasd-controls="acceleration:80" position="0 1.6 5">
+
+      <a-cursor rayOrigin="entity"></a-cursor>
+
+    </a-entity>
+
+  </a-scene>
+
+   <script src="script.js"></script>
+
+</body>
+
+</html>
